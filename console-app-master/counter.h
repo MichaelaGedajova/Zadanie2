@@ -30,10 +30,10 @@ int VratPocetRiadkov(string l) {
 	if (l.length() == 0) return 0;
 	else
 	{
-		for (int i = 0; i < l.length(); i++)
-		{
-			if (l[i] == '\n') lines++;
-		}
-		return lines + 1;
+			for (int i = 0; i < l.length(); i++)
+			{
+				if (l[i] == '\n') lines++;
+			}
+			return lines + 1;
 	}
 }
