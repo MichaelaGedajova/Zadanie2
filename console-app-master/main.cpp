@@ -29,14 +29,14 @@ int main(int argc, char* argv[])
 			{
 				cout << "Pocitanie znakov zo suboru\n" << endl;
 				getline(subor, riadky);					
-				cout << "Pocet vasich znakov: " << VratDlzkuZnaku(riadky) << endl;
+				cout << "Pocet vasich znakov: " << spocitaj<_char>(riadky) << endl;
 			}
 			else
 			{
 				cout << "Pocitanie znakov z klavesnice" << endl;
 				string s;
 				getline(cin, s);
-				cout << "Pocet vasich znakov: " << VratDlzkuZnaku(s) << endl;
+				cout << "Pocet vasich znakov: " << spocitaj<_char>(s) << endl;
 			}
 		}
 		
@@ -46,14 +46,14 @@ int main(int argc, char* argv[])
 			{
 				cout << "Pocitanie slov zo suboru\n" << endl;
 				getline(subor, riadky);
-				cout << "Pocet vasich slov: " << VratPocetSlov(riadky) << endl;
+				cout << "Pocet vasich slov: " << spocitaj<_word>(riadky) << endl;
 			}
 			else
 			{
 				string w;
 				cout << "Pocitanie slov z klavesnice\n" << endl;
 				getline(cin, w);
-				cout << VratPocetSlov(w) << endl;
+				cout << spocitaj<_word>(w) << endl;
 			}
 		}
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 			{
 				cout << "Pocitanie riadkov zo suboru\n" << endl;
 				getline(subor, riadky);
-				cout << "Pocet vasich riadkov: " << VratPocetRiadkov(riadky) << endl;
+				cout << "Pocet vasich riadkov: " << spocitaj<_line>(riadky) << endl;
 			}
 			else
 			{
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 				cout << "Pocitanie riadkov z klavesnice\n" << endl;
 				cout << "Zadajte: stop pre ukoncenie pocitania riadkov\n" << endl;
 				getline(cin, l);
-				cout << VratPocetRiadkov(l) << endl;
+				cout << spocitaj<_line>(l) << endl;
 			}
 		}
 		subor.close();

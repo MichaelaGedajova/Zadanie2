@@ -16,8 +16,8 @@ TEST_CASE("test(popis)", "test(nazov)") {
 	s = "";
 	REQUIRE(VratPocetSlov(s) == 0);
 
-	s = "skola\nskola";
-	REQUIRE(VratPocetRiadkov(s) == 2);
+	s = "skola";
+	REQUIRE(VratPocetRiadkov(s) == 1);
 
 	s = "co je\ndnes\nza\nden";
 	REQUIRE(VratPocetRiadkov(s) == 4);
