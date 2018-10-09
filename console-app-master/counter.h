@@ -9,43 +9,40 @@
 using namespace std;
 
 template <typename T>
-static size_t spocitaj(string str) {
-	return T::spocitaj(str);
-}
+size_t spocitaj(string str) {
+	T obj(str);
+	return obj.spocitaj();
+	}
 
-struct _char {
-	static size_t spocitaj(string str) {
-		return str.length();
+struct _char:public string{
+	_char(string str) : string(str) {};
+	 size_t spocitaj() {
+		return size();
 	}
 };
 
-struct _word {
-	static size_t spocitaj(string str) {
-		int words = 0;
-		if (str.length() == 0) return 0;
-		else
+struct _word:public string { 
+	_word(string str) : string(str) {};
+	 size_t spocitaj() {
+		int words = 0;			
+		for (int i = 0; i < length(); i++)
 		{
-			for (int i = 0; i < str.length(); i++)
-			{
-				if (str[i] == ' ') words++;
-			}
-			return words + 1;
+			if (at(i) == ' ') words++;
 		}
+		return words+1;		
 	}
 };
 
-struct _line {
-	static size_t spocitaj(string str) {
+struct _line:public string {
+	_line(string str) : string(str) {};
+	 size_t spocitaj() {
 		int lines = 0;
-		if (str.length() == 0) return 0;
-		else
-		{
-			for (int i = 0; i < str.length(); i++)
+		
+			for (int i = 0; i < length(); i++)
 			{
-				if (str[i] == '/n') lines++;
+				if (at(i) == '\n') lines++;
 			}
-			return lines + 1;
-		}
+			return lines + 1;		
 	}
 };
 
