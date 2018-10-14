@@ -5,21 +5,21 @@
 
 TEST_CASE("test(popis)", "test(nazov)") {
 	string s = "";	
-	REQUIRE(VratDlzkuZnaku(s) == 0);
+	REQUIRE(spocitaj<_char>(s) == 0);
 
 	s = "ja som";
-	REQUIRE(VratDlzkuZnaku(s) == 6);
+	REQUIRE(spocitaj<_char>(s) == 6);
 
 	s = "dnes je pekny den";
-	REQUIRE(VratPocetSlov(s) == 4);
+	REQUIRE(spocitaj<_word>(s) == 4);
 
-	s = "";
-	REQUIRE(VratPocetSlov(s) == 0);
+	s = "ides";
+	REQUIRE(spocitaj<_word>(s) == 1);
 
-	s = "skola";
-	REQUIRE(VratPocetRiadkov(s) == 1);
+	s = "skola nie je";
+	REQUIRE(spocitaj<_line>(s) == 1);
 
 	s = "co je\ndnes\nza\nden";
-	REQUIRE(VratPocetRiadkov(s) == 4);
+	REQUIRE(spocitaj<_line>(s) == 4);
 
 }
