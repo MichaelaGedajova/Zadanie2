@@ -1,10 +1,10 @@
 // HelloWindowsDesktop.cpp
 // compile with: /D_UNICODE /DUNICODE /DWIN32 /D_WINDOWS /c
 
-#include <windows.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
+#include <afxdlgs.h>
 
 // Global variables
 
@@ -23,8 +23,7 @@ int CALLBACK WinMain(
 	_In_ HINSTANCE hInstance,
 	_In_ HINSTANCE hPrevInstance,
 	_In_ LPSTR     lpCmdLine,
-	_In_ int       nCmdShow
-)
+	_In_ int       nCmdShow)
 {
 	WNDCLASSEX wcex;
 
@@ -93,6 +92,22 @@ int CALLBACK WinMain(
 		nCmdShow);
 	UpdateWindow(hWnd);
 
+	LPCTSTR lpszDefExt;
+	LPCTSTR lpszFileName;
+	DWORD dwFlags;
+	LPCTSTR lpszFilter;
+	CWnd* pParentWnd;
+	DWORD dwSize;
+	BOOL bVistaStyle;
+
+	CFileDialog dlgFile(TRUE, lpszDefExt=NULL, 
+		lpszFileName=_T("Bitmap Files |Jpeg Files (.jpg)|.jpg|Png Files (.png)|.png|Tiff Files (.tiff)|.tiff||"), 
+		dwFlags= OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+		lpszFilter=NULL,
+		pParentWnd=NULL,
+		dwSize=0,
+		bVistaStyle=TRUE);
+
 	// Main message loop:
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -115,7 +130,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 	TCHAR greeting[] = _T("Hello, Windows desktop!");
-
+	
 	switch (message)
 	{
 	case WM_PAINT:
