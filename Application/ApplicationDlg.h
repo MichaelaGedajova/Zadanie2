@@ -49,6 +49,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	CString path_name;
 	DECLARE_MESSAGE_MAP()
+	CImage *image=nullptr;
 
 public:
 	afx_msg void OnFileOpen();

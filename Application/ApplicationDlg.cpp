@@ -11,6 +11,8 @@
 #include <vector>
 #include <stdio.h>
 
+using namespace Gdiplus;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -182,13 +184,6 @@ void CApplicationDlg::OnPaint()
 	}
 	else
 	{
-		// velkost obrazku
-		CImage image;
-		image.Load(path_name);
-
-		int img_x = image.GetWidth();
-		int img_y = image.GetHeight();
-
 		// velkost dialogoveho okna 
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
@@ -196,50 +191,57 @@ void CApplicationDlg::OnPaint()
 		GetClientRect(&rect);
 		int dlg_x = (rect.Width() - cxIcon + 1) / 2;
 		int dlg_y = (rect.Height() - cyIcon + 1) / 2;
+		// velkost obrazku
+		if (image)
+		{
+			int img_x = image->GetWidth();
+			int img_y = image->GetHeight();
 
-		//skalovanie obrazku podla dialogoveho okna, ked sa znova klikne na open obrazok sa zvacsi
-		float pom = 1;
 
-		if ((img_x <= dlg_x) && (img_y > dlg_y)) {
-			pom = (float)dlg_y / (float)img_y;
-		}
-		if ((img_x > dlg_x) && (img_y <= dlg_y)) {
-			pom = (float)dlg_x / (float)img_x;
-		}
-		if ((img_x <= dlg_x) && (img_y <= dlg_y)) {
-			if (dlg_x > dlg_y) {
+			//skalovanie obrazku podla dialogoveho okna, ked sa znova klikne na open obrazok sa zvacsi
+			float pom = 1;
+
+			if ((img_x <= dlg_x) && (img_y > dlg_y)) {
 				pom = (float)dlg_y / (float)img_y;
 			}
-			else {
+			if ((img_x > dlg_x) && (img_y <= dlg_y)) {
 				pom = (float)dlg_x / (float)img_x;
 			}
-		}
-
-		if ((img_x > dlg_x) && (img_y > dlg_y)) {
-			if (img_x > img_y) {
-				pom = (float)dlg_y / (float)img_y;
+			if ((img_x <= dlg_x) && (img_y <= dlg_y)) {
+				if (dlg_x > dlg_y) {
+					pom = (float)dlg_y / (float)img_y;
+				}
+				else {
+					pom = (float)dlg_x / (float)img_x;
+				}
 			}
-			else {
-				pom = (float)dlg_x / (float)img_x;
+
+			if ((img_x > dlg_x) && (img_y > dlg_y)) {
+				if (img_x > img_y) {
+					pom = (float)dlg_y / (float)img_y;
+				}
+				else {
+					pom = (float)dlg_x / (float)img_x;
+				}
 			}
+			float fc = pom;
+			int img_x_po = img_x*pom;
+			int img_y_po = img_y*pom;
+
+			CDC *screenDC = GetDC();
+			CDC mDC;
+			mDC.CreateCompatibleDC(screenDC);
+			CBitmap bitmap;
+			bitmap.CreateCompatibleBitmap(screenDC, img_x * pom, img_y * pom);
+
+			CBitmap *p_bitmap = mDC.SelectObject(&bitmap);
+			mDC.SetStretchBltMode(HALFTONE);
+			image->StretchBlt(mDC.m_hDC, 0, 0, img_x * pom, img_y * pom, 0, 0, img_x, img_y, SRCCOPY);
+			mDC.SelectObject(p_bitmap);
+
+			m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
+			ReleaseDC(screenDC);
 		}
-		float fc = pom;
-		int img_x_po = img_x*pom;
-		int img_y_po = img_y*pom;
-
-		CDC *screenDC = GetDC();
-		CDC mDC;
-		mDC.CreateCompatibleDC(screenDC);
-		CBitmap bitmap;
-		bitmap.CreateCompatibleBitmap(screenDC, img_x * pom, img_y * pom);
-
-		CBitmap *p_bitmap = mDC.SelectObject(&bitmap);
-		mDC.SetStretchBltMode(HALFTONE);
-		image.StretchBlt(mDC.m_hDC, 0, 0, img_x * pom, img_y * pom, 0, 0, img_x, img_y, SRCCOPY);
-		mDC.SelectObject(p_bitmap);
-
-		m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
-		ReleaseDC(screenDC);
 		CDialogEx::OnPaint();
 	}
 }
@@ -259,6 +261,8 @@ void CApplicationDlg::OnFileOpen()
 	// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte
 	if (dlg.DoModal() == IDOK) {
 		path_name = dlg.GetPathName();
+		image = new CImage();
+		image->Load(path_name);
 		OnPaint();
 		/*
 		CImage image;
