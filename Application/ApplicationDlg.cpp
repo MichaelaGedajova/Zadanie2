@@ -19,6 +19,8 @@
 #define MIN_SIZE 300
 #endif
 
+BITMAP bitmap;
+
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	GetParent()->SendMessage( CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
@@ -166,10 +168,8 @@ void CApplicationDlg::OnPaint()
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
-
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-
-		// Center icon in client rectangle
+		// velkost dialogoveho okna 
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -178,45 +178,26 @@ void CApplicationDlg::OnPaint()
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
 		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
+		dc.DrawIcon(x,y, m_hIcon);
 	}
 	else
 	{
-		CDialogEx::OnPaint();
-	}
-}
-
-// The system calls this function to obtain the cursor to display while the user drags
-//  the minimized window.
-HCURSOR CApplicationDlg::OnQueryDragIcon()
-{
-	return static_cast<HCURSOR>(m_hIcon);
-}
-
-void CApplicationDlg::OnFileOpen()
-{
-	// file dialog (.jpg a .png)
-	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
-
-	// zobrazenie file dialogu
-	if (dlg.DoModal() == IDOK) {
-		CString path_name = dlg.GetPathName();
-
-	// velkost dialogoveho okna 
-		CRect rect;    
-		GetClientRect(&rect);  
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		int dlg_x = (rect.Width() - cxIcon + 1) / 2;
-		int dlg_y = (rect.Height() - cyIcon + 1) / 2;
-		
-	// velkost obrazku
+		// velkost obrazku
 		CImage image;
 		image.Load(path_name);
+
 		int img_x = image.GetWidth();
 		int img_y = image.GetHeight();
 
-	//skalovanie obrazku podla dialogoveho okna, ked sa znova klikne na open obrazok sa zvacsi
+		// velkost dialogoveho okna 
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int dlg_x = (rect.Width() - cxIcon + 1) / 2;
+		int dlg_y = (rect.Height() - cyIcon + 1) / 2;
+
+		//skalovanie obrazku podla dialogoveho okna, ked sa znova klikne na open obrazok sa zvacsi
 		float pom = 1;
 
 		if ((img_x <= dlg_x) && (img_y > dlg_y)) {
@@ -233,7 +214,7 @@ void CApplicationDlg::OnFileOpen()
 				pom = (float)dlg_x / (float)img_x;
 			}
 		}
-		
+
 		if ((img_x > dlg_x) && (img_y > dlg_y)) {
 			if (img_x > img_y) {
 				pom = (float)dlg_y / (float)img_y;
@@ -242,11 +223,10 @@ void CApplicationDlg::OnFileOpen()
 				pom = (float)dlg_x / (float)img_x;
 			}
 		}
-
 		float fc = pom;
 		int img_x_po = img_x*pom;
 		int img_y_po = img_y*pom;
-	
+
 		CDC *screenDC = GetDC();
 		CDC mDC;
 		mDC.CreateCompatibleDC(screenDC);
@@ -260,14 +240,33 @@ void CApplicationDlg::OnFileOpen()
 
 		m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
 		ReleaseDC(screenDC);
+		CDialogEx::OnPaint();
+	}
+}
 
+// The system calls this function to obtain the cursor to display while the user drags
+//  the minimized window.
+HCURSOR CApplicationDlg::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CApplicationDlg::OnFileOpen()
+{
+	// file dialog (.jpg a .png)
+	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
+
+	// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte
+	if (dlg.DoModal() == IDOK) {
+		path_name = dlg.GetPathName();
+		OnPaint();
 		/*
 		CImage image;
 		image.Load(path_name); // just change extension to load jpg
 		CBitmap bitmap;
 		bitmap.Attach(image.Detach());
 		m_ctrlImage.SetBitmap(bitmap); // this lets me see the result
-		*/
+		*/	
 	}
 	else {
 		::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);

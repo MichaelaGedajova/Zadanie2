@@ -47,6 +47,7 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	CString path_name;
 	DECLARE_MESSAGE_MAP()
 
 public:
