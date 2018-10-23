@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 #include <stdio.h>
+#include <gdiplus.h>
 
 using namespace Gdiplus;
 
@@ -20,8 +21,6 @@ using namespace Gdiplus;
 #ifndef MIN_SIZE
 #define MIN_SIZE 300
 #endif
-
-BITMAP bitmap;
 
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {

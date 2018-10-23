@@ -50,6 +50,7 @@ protected:
 	CString path_name;
 	DECLARE_MESSAGE_MAP()
 	CImage *image=nullptr;
+	BITMAP bitmap;
 
 public:
 	afx_msg void OnFileOpen();
