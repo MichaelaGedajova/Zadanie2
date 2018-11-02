@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 #include <stdio.h>
+#include <iostream>
 #include <gdiplus.h>
 
 using namespace Gdiplus;
@@ -97,6 +98,27 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
 	//DRAW BITMAP
+	if (image != nullptr) {
+
+		CBitmap bmp;
+		CDC bmDC;
+		CBitmap *pOldbmp;
+		BITMAP  bi;
+
+		bmp.Attach(image->Detach());   //udaje nasho image obrazku 
+		bmDC.CreateCompatibleDC(pDC);  //udaje z pdc su skopirovane do bmDC
+
+		CRect r(lpDI->rcItem); //rozmery "niecoho"
+
+		//bmDC je kopia pDC, pDC je to s cim pracujeme
+		pOldbmp = bmDC.SelectObject(&bmp); //smernik ukazuje na bmDC
+		bmp.GetBitmap(&bi);  //vlastnosti BITMAP do bmp
+		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.menu
+		bmDC.SelectObject(pOldbmp); //?
+		return S_OK;
+
+		
+	}
 	return S_OK;
 }
 
@@ -169,8 +191,10 @@ void CApplicationDlg::OnPaint()
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
+
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-		// velkost dialogoveho okna 
+
+		// Center icon in client rectangle
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -179,68 +203,10 @@ void CApplicationDlg::OnPaint()
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
 		// Draw the icon
-		dc.DrawIcon(x,y, m_hIcon);
+		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
 	{
-		// velkost dialogoveho okna 
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int dlg_x = (rect.Width() - cxIcon + 1) / 2;
-		int dlg_y = (rect.Height() - cyIcon + 1) / 2;
-		// velkost obrazku
-		if (image)
-		{
-			int img_x = image->GetWidth();
-			int img_y = image->GetHeight();
-
-
-			//skalovanie obrazku podla dialogoveho okna, ked sa znova klikne na open obrazok sa zvacsi
-			float pom = 1;
-
-			if ((img_x <= dlg_x) && (img_y > dlg_y)) {
-				pom = (float)dlg_y / (float)img_y;
-			}
-			if ((img_x > dlg_x) && (img_y <= dlg_y)) {
-				pom = (float)dlg_x / (float)img_x;
-			}
-			if ((img_x <= dlg_x) && (img_y <= dlg_y)) {
-				if (dlg_x > dlg_y) {
-					pom = (float)dlg_y / (float)img_y;
-				}
-				else {
-					pom = (float)dlg_x / (float)img_x;
-				}
-			}
-
-			if ((img_x > dlg_x) && (img_y > dlg_y)) {
-				if (img_x > img_y) {
-					pom = (float)dlg_y / (float)img_y;
-				}
-				else {
-					pom = (float)dlg_x / (float)img_x;
-				}
-			}
-			float fc = pom;
-			int img_x_po = img_x*pom;
-			int img_y_po = img_y*pom;
-
-			CDC *screenDC = GetDC();
-			CDC mDC;
-			mDC.CreateCompatibleDC(screenDC);
-			CBitmap bitmap;
-			bitmap.CreateCompatibleBitmap(screenDC, img_x * pom, img_y * pom);
-
-			CBitmap *p_bitmap = mDC.SelectObject(&bitmap);
-			mDC.SetStretchBltMode(HALFTONE);
-			image->StretchBlt(mDC.m_hDC, 0, 0, img_x * pom, img_y * pom, 0, 0, img_x, img_y, SRCCOPY);
-			mDC.SelectObject(p_bitmap);
-
-			m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
-			ReleaseDC(screenDC);
-		}
 		CDialogEx::OnPaint();
 	}
 }
@@ -256,24 +222,47 @@ void CApplicationDlg::OnFileOpen()
 {
 	// file dialog (.jpg a .png)
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
+	if (image == nullptr) {
+		// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte
+		if (dlg.DoModal() == IDOK) {
+			path_name = dlg.GetPathName();
+			image = new CImage();
+			if (image->Load(path_name))
+			{
+				delete image;
+				image = nullptr;
+			}
 
-	// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte
-	if (dlg.DoModal() == IDOK) {
-		path_name = dlg.GetPathName();
-		image = new CImage();
-		image->Load(path_name);
-		OnPaint();
-		/*
-		CImage image;
-		image.Load(path_name); // just change extension to load jpg
-		CBitmap bitmap;
-		bitmap.Attach(image.Detach());
-		m_ctrlImage.SetBitmap(bitmap); // this lets me see the result
-		*/	
+			// prekreslenie seckih okien
+			Invalidate();
+		}
+		else {
+			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
+		}
+		::MessageBox(NULL, __T("Prvy IF, image je nula"), __T("Error"), MB_OK);
 	}
 	else {
-		::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
+		delete image;
+		image = nullptr;
+	/*	// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte */
+		if (dlg.DoModal() == IDOK) {
+			path_name = dlg.GetPathName();
+			image = new CImage();
+			if (image->Load(path_name))
+			{
+				delete image;
+				image = nullptr;
+			}
+
+			// prekreslenie seckih okien
+			Invalidate();
+		}
+		else {
+			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
+		}
+	/*	::MessageBox(NULL, __T("Druhy if, uz som mala pred tym obrazok"), __T("Error"), MB_OK);*/
 	}
+
 }
 
 void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
@@ -284,7 +273,7 @@ void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 
 void CApplicationDlg::OnFileClose()
 {
-
+	::MessageBox(NULL, __T("Zatvorenie suboru"), __T("Message"), MB_OK);
 }
 
 
