@@ -1,8 +1,12 @@
 ﻿  ApplicationDlg.cpp
+ApplicationDlg.cpp(132): warning C4101: 'maxs': unreferenced local variable
+ApplicationDlg.cpp(132): warning C4101: 'mins': unreferenced local variable
+ApplicationDlg.cpp(132): warning C4101: 'minv': unreferenced local variable
+ApplicationDlg.cpp(132): warning C4101: 'maxv': unreferenced local variable
   Generating code
-  2 of 290 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+  2 of 295 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    2 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Release\Application.exe
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Release\Application.pdb (Full PDB)

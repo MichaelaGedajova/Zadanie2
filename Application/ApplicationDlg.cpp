@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <gdiplus.h>
+#include <algorithm> 
 
 using namespace Gdiplus;
 
@@ -85,7 +86,6 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
 END_MESSAGE_MAP()
 
-
 void CApplicationDlg::OnDestroy()
 {
 	Default();
@@ -93,6 +93,11 @@ void CApplicationDlg::OnDestroy()
 
 LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 {
+	CBitmap bmp;
+	CDC bmDC;
+	CBitmap *pOldbmp;
+	BITMAP  bi;
+
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
@@ -100,11 +105,7 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	//DRAW BITMAP
 	if (image != nullptr) {
 
-		CBitmap bmp;
-		CDC bmDC;
-		CBitmap *pOldbmp;
-		BITMAP  bi;
-
+		/*AfxMessageBox(_T("aaa"));*/
 		bmp.Attach(image->Detach());   //udaje nasho image obrazku 
 		bmDC.CreateCompatibleDC(pDC);  //udaje z pdc su skopirovane do bmDC
 
@@ -113,13 +114,27 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		//bmDC je kopia pDC, pDC je to s cim pracujeme
 		pOldbmp = bmDC.SelectObject(&bmp); //smernik ukazuje na bmDC
 		bmp.GetBitmap(&bi);  //vlastnosti BITMAP do bmp
-		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.menu
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth,bi.bmHeight,SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.
 		bmDC.SelectObject(pOldbmp); //?
-		return S_OK;
+		image->Attach((HBITMAP)bmp.Detach());
+		return S_OK;		
 
-		
 	}
 	return S_OK;
+}
+
+void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
+{
+	/*AfxMessageBox(_T("aaa")); fungue, lezie to tu */
+	__super::OnSize(nType,cx,cy);
+	
+	/*treba spravit skalovanie*/
+	int maxv, maxs, minv, mins;
+	/*maxv = max(cx);*/
+
+	if (m_ctrlImage)
+		m_ctrlImage.MoveWindow(CRect(0,0, cx, cy));	
+	Invalidate();
 }
 
 void CApplicationDlg::OnClose()
