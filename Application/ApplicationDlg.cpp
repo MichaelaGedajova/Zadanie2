@@ -102,6 +102,7 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
+	
 	//DRAW BITMAP
 	if (image != nullptr) {
 
@@ -114,11 +115,46 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		//bmDC je kopia pDC, pDC je to s cim pracujeme
 		pOldbmp = bmDC.SelectObject(&bmp); //smernik ukazuje na bmDC
 		bmp.GetBitmap(&bi);  //vlastnosti BITMAP do bmp
-		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth,bi.bmHeight,SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.
+		SetStretchBltMode(pDC->m_hDC, COLORONCOLOR);
+
+		// velkost obrazku
+	//	int img_x = bi.bmWidth;
+		//int img_y = bi.bmHeight;
+		//int dlg_x = r.Width();
+		//int dlg_y = r.Height();
+		
+		/*float pom = 1;
+		if ((img_x <= dlg_x) && (img_y > dlg_y)) {
+			pom = (float)dlg_y / (float)img_y;
+		}
+		if ((img_x > dlg_x) && (img_y <= dlg_y)) {
+			pom = (float)dlg_x / (float)img_x;
+		}
+		if ((img_x <= dlg_x) && (img_y <= dlg_y)) {
+			if (dlg_x > dlg_y) {
+				pom = (float)dlg_y / (float)img_y;
+			}
+			else {
+				pom = (float)dlg_x / (float)img_x;
+			}
+		}
+		
+		if ((img_x > dlg_x) && (img_y > dlg_y)) {
+			if (img_x > img_y) {
+				pom = (float)dlg_y / (float)img_y;
+			}
+			else {
+				pom = (float)dlg_x / (float)img_x;
+			}
+		}*/
+			
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight,SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.
+		//pDC->StretchBlt(0, 0, img_x*pom, img_y*pom, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
 		bmDC.SelectObject(pOldbmp); //?
 		image->Attach((HBITMAP)bmp.Detach());
-		return S_OK;		
-
+		ReleaseDC(pDC);
+			
+		return S_OK;	
 	}
 	return S_OK;
 }
@@ -130,8 +166,8 @@ void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
 	
 	/*treba spravit skalovanie*/
 	int maxv, maxs, minv, mins;
-	/*maxv = max(cx);*/
-
+	/*maxv = max(cx); abs(cx-cx)*/
+	
 	if (m_ctrlImage)
 		m_ctrlImage.MoveWindow(CRect(0,0, cx, cy));	
 	Invalidate();
@@ -222,6 +258,7 @@ void CApplicationDlg::OnPaint()
 	}
 	else
 	{
+		
 		CDialogEx::OnPaint();
 	}
 }
