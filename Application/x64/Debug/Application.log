@@ -1,10 +1,7 @@
-﻿  stdafx.cpp
-  ApplicationDlg.cpp
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(188): warning C4101: 'maxs': unreferenced local variable
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(188): warning C4101: 'mins': unreferenced local variable
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(188): warning C4101: 'minv': unreferenced local variable
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(188): warning C4101: 'maxv': unreferenced local variable
-  Application.cpp
-  Generating Code...
+﻿  ApplicationDlg.cpp
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(150): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(151): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(271): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(274): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.exe
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.pdb (Partial PDB)

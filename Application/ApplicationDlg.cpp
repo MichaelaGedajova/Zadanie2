@@ -9,11 +9,8 @@
 #include <utility>
 #include <tuple>
 #include <vector>
-#include <stdio.h>
-#include <iostream>
 #include <gdiplus.h>
-#include <algorithm> 
-
+#include <iostream>
 using namespace Gdiplus;
 
 #ifdef _DEBUG
@@ -24,9 +21,17 @@ using namespace Gdiplus;
 #define MIN_SIZE 300
 #endif
 
+
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-	GetParent()->SendMessage( CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
+	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
+	
+}
+
+void CStaticHistogram::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_HISTOGRAM, (WPARAM)lpDrawItemStruct);
+
 }
 
 // CAboutDlg dialog used for App About
@@ -36,7 +41,7 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg() : CDialogEx(IDD_ABOUTBOX) {}
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
@@ -47,7 +52,7 @@ protected:
 		CDialogEx::DoDataExchange(pDX);
 	}
 
-// Implementation
+	// Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -68,6 +73,7 @@ void CApplicationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_IMAGE, m_ctrlImage);
+	DDX_Control(pDX, IDC_HISTOGRAM, m_ctrlHistogram);
 }
 
 BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
@@ -82,95 +88,110 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_SIZING()
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
+	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
-	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
 END_MESSAGE_MAP()
+
 
 void CApplicationDlg::OnDestroy()
 {
 	Default();
 }
 
+float CApplicationDlg::Skalovanie(CRect r, BITMAP bi)
+{
+	float fact = 1.0;
+
+	if ((bi.bmHeight > r.Height()) && (bi.bmWidth <= r.Width()))
+		fact = (float)bi.bmHeight / (float)r.Height();
+
+	if ((bi.bmWidth > r.Width()) && (bi.bmHeight <= r.Height()))
+		fact = (float)bi.bmWidth / (float)r.Width();
+
+	if (((bi.bmWidth < r.Width()) && (bi.bmHeight < r.Height())) ||
+		((bi.bmWidth > r.Width()) && (bi.bmHeight > r.Height()))) {
+
+		if (r.Height() > r.Width())
+			fact = (float)bi.bmWidth / (float)r.Width();
+		else fact = (float)bi.bmHeight / (float)r.Height();
+	}
+
+	return fact;
+}
+
 LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 {
-	CBitmap bmp;
-	CDC bmDC;
-	CBitmap *pOldbmp;
-	BITMAP  bi;
-
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
-	
 	//DRAW BITMAP
 	if (image != nullptr) {
 
-		/*AfxMessageBox(_T("aaa"));*/
-		bmp.Attach(image->Detach());   //udaje nasho image obrazku 
-		bmDC.CreateCompatibleDC(pDC);  //udaje z pdc su skopirovane do bmDC
+		CBitmap bmp;
+		CDC bmDC;
+		CBitmap *pOldbmp;
+		BITMAP  bi;
 
-		CRect r(lpDI->rcItem); //rozmery "niecoho"
+		//udaje nasho image obrazku 
+		bmp.Attach(image->Detach());
+		//udaje z pdc su skopirovane do bmDC
+		bmDC.CreateCompatibleDC(pDC);
+
+		CRect r(lpDI->rcItem);
 
 		//bmDC je kopia pDC, pDC je to s cim pracujeme
-		pOldbmp = bmDC.SelectObject(&bmp); //smernik ukazuje na bmDC
-		bmp.GetBitmap(&bi);  //vlastnosti BITMAP do bmp
-		SetStretchBltMode(pDC->m_hDC, COLORONCOLOR);
+		//smernik ukazuje na bmDC
+		pOldbmp = bmDC.SelectObject(&bmp);
+		//vlastnosti BITMAP do bmp
+		bmp.GetBitmap(&bi);
 
-		// velkost obrazku
-	//	int img_x = bi.bmWidth;
-		//int img_y = bi.bmHeight;
-		//int dlg_x = r.Width();
-		//int dlg_y = r.Height();
-		
-		/*float pom = 1;
-		if ((img_x <= dlg_x) && (img_y > dlg_y)) {
-			pom = (float)dlg_y / (float)img_y;
-		}
-		if ((img_x > dlg_x) && (img_y <= dlg_y)) {
-			pom = (float)dlg_x / (float)img_x;
-		}
-		if ((img_x <= dlg_x) && (img_y <= dlg_y)) {
-			if (dlg_x > dlg_y) {
-				pom = (float)dlg_y / (float)img_y;
-			}
-			else {
-				pom = (float)dlg_x / (float)img_x;
-			}
-		}
-		
-		if ((img_x > dlg_x) && (img_y > dlg_y)) {
-			if (img_x > img_y) {
-				pom = (float)dlg_y / (float)img_y;
-			}
-			else {
-				pom = (float)dlg_x / (float)img_x;
-			}
-		}*/
-			
-		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight,SRCCOPY);  //hlavne ulozenie &bmDC - adresa kontext.
-		//pDC->StretchBlt(0, 0, img_x*pom, img_y*pom, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
-		bmDC.SelectObject(pOldbmp); //?
+		//skalovanie		
+		bi.bmWidth *= ((float)r.Width() / (float)bi.bmWidth) * Skalovanie(r, bi);;
+		bi.bmHeight *= ((float)r.Height() / (float)bi.bmHeight) * Skalovanie(r, bi);;
+		pDC->SetStretchBltMode(HALFTONE);
+
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
+		bmDC.SelectObject(pOldbmp);
 		image->Attach((HBITMAP)bmp.Detach());
-		ReleaseDC(pDC);
-			
-		return S_OK;	
+		return S_OK;
 	}
 	return S_OK;
 }
 
-void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
+LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 {
-	/*AfxMessageBox(_T("aaa")); fungue, lezie to tu */
-	__super::OnSize(nType,cx,cy);
-	
-	/*treba spravit skalovanie*/
-	int maxv, maxs, minv, mins;
-	/*maxv = max(cx); abs(cx-cx)*/
-	
-	if (m_ctrlImage)
-		m_ctrlImage.MoveWindow(CRect(0,0, cx, cy));	
-	Invalidate();
+	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
+
+	CDC * pDC = CDC::FromHandle(lpDI->hDC);
+
+	//DRAW BITMAP
+	if (image != nullptr) {
+
+		CRect rect(lpDI->rcItem);
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(0, 0, 151));
+
+		pDC->FillRect(&rect, &brush);
+
+		DeleteObject(brush);
+
+		CDC bmDC;
+
+	}
+	else
+	{
+		CRect rect(lpDI->rcItem);
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(255, 255, 255));
+
+		pDC->FillRect(&rect, &brush);
+
+		DeleteObject(brush);
+
+		CDC bmDC;
+	}
+	return S_OK;
 }
 
 void CApplicationDlg::OnClose()
@@ -207,15 +228,19 @@ BOOL CApplicationDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// TODO: Add extra initialization here
+									// TODO: Add extra initialization here
 	CRect rct;
 
 	CRect rctClient;
 	GetClientRect(&rctClient);
-	
+
 	m_ctrlImage.GetWindowRect(&rct);
 	m_ptImage.x = rctClient.Width() - rct.Width();
 	m_ptImage.y = rctClient.Height() - rct.Height();
+
+	m_ctrlHistogram.GetWindowRect(&rct);
+	m_ptHistogram.x = rctClient.Width() - rct.Width();
+	m_ptHistogram.y = rctClient.Height() - rct.Height();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -236,6 +261,19 @@ void CApplicationDlg::OnSysCommand(UINT nID, LPARAM lParam)
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
+
+
+void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
+{
+	Invalidate();
+	__super::OnSize(nType, cx, cy);
+	if (m_ctrlImage)
+		m_ctrlImage.MoveWindow(CRect((cx*0.2), 0, cx, cy));
+
+	if (m_ctrlHistogram)
+		m_ctrlHistogram.MoveWindow(CRect(0, (cy*0.5), (cx*0.2), cy));
+}
+
 
 void CApplicationDlg::OnPaint()
 {
@@ -258,7 +296,6 @@ void CApplicationDlg::OnPaint()
 	}
 	else
 	{
-		
 		CDialogEx::OnPaint();
 	}
 }
@@ -272,31 +309,33 @@ HCURSOR CApplicationDlg::OnQueryDragIcon()
 
 void CApplicationDlg::OnFileOpen()
 {
+	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	// file dialog (.jpg a .png)
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
 	if (image == nullptr) {
-		// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte
+		// tu zobrazujem dialog
 		if (dlg.DoModal() == IDOK) {
 			path_name = dlg.GetPathName();
 			image = new CImage();
+			//path_name je protected premenna
 			if (image->Load(path_name))
 			{
 				delete image;
 				image = nullptr;
 			}
 
-			// prekreslenie seckih okien
+			// prekreslenie vsetkych okien
 			Invalidate();
 		}
 		else {
 			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
 		}
-		::MessageBox(NULL, __T("Prvy IF, image je nula"), __T("Error"), MB_OK);
+		//::MessageBox(NULL, __T("Prvy IF, image je nula"), __T("Error"), MB_OK);
 	}
 	else {
 		delete image;
 		image = nullptr;
-	/*	// zobrazenie file dialogu, protected premenna path_name, mozem pouzivat v celom projekte */
+		/* zobrazenie file dialogu */
 		if (dlg.DoModal() == IDOK) {
 			path_name = dlg.GetPathName();
 			image = new CImage();
@@ -305,36 +344,36 @@ void CApplicationDlg::OnFileOpen()
 				delete image;
 				image = nullptr;
 			}
-
-			// prekreslenie seckih okien
+			// prekreslenie vsetkych okien
 			Invalidate();
 		}
 		else {
 			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
 		}
-	/*	::MessageBox(NULL, __T("Druhy if, uz som mala pred tym obrazok"), __T("Error"), MB_OK);*/
 	}
-
 }
+
 
 void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
+
 }
 
 
 void CApplicationDlg::OnFileClose()
 {
 	::MessageBox(NULL, __T("Zatvorenie suboru"), __T("Message"), MB_OK);
+	if (image != nullptr)
+	{
+		delete image;
+		image = nullptr;
+	}
+	Invalidate();
 }
 
 
 void CApplicationDlg::OnUpdateFileClose(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
-}
-
-void CApplicationDlg::OnStnClickedImage()
-{
-	// TODO: Add your control notification handler code here
 }
