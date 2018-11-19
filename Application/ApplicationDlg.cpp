@@ -168,14 +168,16 @@ void CApplicationDlg::Histogram(int h, int w)
 		int *Red = new int[(h*w)];
 		int *Green = new int[(h*w)];
 		int *Blue = new int[(h*w)];
+		int pom = 0;
 
 		for (int i = 0; i < w; i++)
 			for (int j = 0; j < h; j++)
 			{
 				ccolor = image->GetPixel(i, j);
-				Red[(w*j) + i] = (int)GetRValue(ccolor);
-				Green[(w*j) + i] = (int)GetGValue(ccolor);
-				Blue[(w*j) + i] = (int)GetBValue(ccolor);
+				Red[pom] = (int)GetRValue(ccolor);
+				Green[pom] = (int)GetGValue(ccolor);
+				Blue[pom] = (int)GetBValue(ccolor);
+				pom++;
 			}
 
 		for (int i = 0; i < h*w; i++)
