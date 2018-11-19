@@ -145,7 +145,7 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		pOldbmp = bmDC.SelectObject(&bmp);
 		//vlastnosti BITMAP do bmp
 		bmp.GetBitmap(&bi);
-
+		
 		//skalovanie		
 		bi.bmWidth *= ((float)r.Width() / (float)bi.bmWidth) * Skalovanie(r, bi);;
 		bi.bmHeight *= ((float)r.Height() / (float)bi.bmHeight) * Skalovanie(r, bi);;
@@ -154,9 +154,70 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
 		image->Attach((HBITMAP)bmp.Detach());
+
 		return S_OK;
 	}
 	return S_OK;
+}
+
+void CApplicationDlg::Histogram(int h, int w)
+{
+	if (image != nullptr) {
+
+		COLORREF ccolor = 0;
+		int *Red = new int[(h*w)];
+		int *Green = new int[(h*w)];
+		int *Blue = new int[(h*w)];
+
+		for (int i = 0; i < w; i++)
+			for (int j = 0; j < h; j++)
+			{
+				ccolor = image->GetPixel(i, j);
+				Red[(w*j) + i] = (int)GetRValue(ccolor);
+				Green[(w*j) + i] = (int)GetGValue(ccolor);
+				Blue[(w*j) + i] = (int)GetBValue(ccolor);
+			}
+
+		for (int i = 0; i < h*w; i++)
+		{
+			histogramR[Red[i]]++; histogramG[Green[i]]++; histogramB[Blue[i]]++;
+		}
+	}
+}
+
+
+float CApplicationDlg::FunkciaMax(int *pole)
+{
+	float max;
+	max = pole[0];
+	for (int i = 0; i <= 255; i++)
+	{
+		if (max < pole[i]) max = pole[i];
+	}
+	return max;
+}
+
+
+void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC)
+{
+	CPen penR(PS_SOLID, 1, RGB(255, 0, 0));
+	CPen penG(PS_SOLID, 1, RGB(0, 255, 0));
+	CPen penB(PS_SOLID, 1, RGB(0, 0, 255));
+
+	for (int i = 0; i < 255; i++)
+	{
+		pDC->SelectObject(&penR);
+		pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
+		pDC->LineTo(sx*(i + 1), rect.Height() - sy *histogramR[i + 1]);
+
+		pDC->SelectObject(&penG);
+		pDC->MoveTo(sx*i, rect.Height() - sy * histogramG[i]);
+		pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramG[i + 1]);
+
+		pDC->SelectObject(&penB);
+		pDC->MoveTo(sx*i, rect.Height() - sy * histogramB[i]);
+		pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramB[i + 1]);
+	}
 }
 
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
@@ -168,28 +229,45 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	//DRAW BITMAP
 	if (image != nullptr) {
 
-		CRect rect(lpDI->rcItem);
-		CBrush brush;
-		brush.CreateSolidBrush(RGB(0, 0, 151));
-
-		pDC->FillRect(&rect, &brush);
-
-		DeleteObject(brush);
-
+		CBitmap bmp;
 		CDC bmDC;
+		BITMAP  bi;
+		CRect rect(lpDI->rcItem);
+		float maxR, maxG, maxB;
+		float factor = 0;
+		float sx, sy;
+		
+		bmp.Attach(image->Detach());
+		bmDC.CreateCompatibleDC(pDC);
+		bmp.GetBitmap(&bi);
+		image->Attach((HBITMAP)bmp.Detach());
 
+		Histogram(bi.bmHeight, bi.bmWidth);
+
+		//skalovanie histogramu
+		maxR = FunkciaMax(histogramR);
+		maxG = FunkciaMax(histogramG);
+		maxB = FunkciaMax(histogramB);
+		
+		if ((factor < maxR) || (factor < maxG) || (factor < maxB))
+		{
+			if (factor < maxR) factor = maxR;
+			else if(factor < maxG) factor = maxG;
+			else factor = maxB;
+		}
+
+		sx = (float)rect.Width()/256;
+		sy = (float)rect.Height()/factor;
+		KresliHistogram(sx, sy, rect, pDC);
 	}
 	else
 	{
 		CRect rect(lpDI->rcItem);
 		CBrush brush;
 		brush.CreateSolidBrush(RGB(255, 255, 255));
-
 		pDC->FillRect(&rect, &brush);
-
 		DeleteObject(brush);
 
-		CDC bmDC;
 	}
 	return S_OK;
 }
