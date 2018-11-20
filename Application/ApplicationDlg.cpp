@@ -199,13 +199,13 @@ float CApplicationDlg::FunkciaMax(int *pole)
 	return max;
 }
 
-void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen,int *pole)
+void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen,int *pole,COLORREF color)
 {
 	for (int i = 0; i < 255; i++)
-	{
-		pDC->SelectObject(pen);
-		pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
-		pDC->LineTo(sx*(i + 1), rect.Height() - sy *pole[i + 1]);
+	{		
+		pDC->FillSolidRect(sx*i,rect.Height()-pole[i]*sy,1,pole[i]*sy,color);
+		//pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
+		//pDC->LineTo(sx*(i + 1), rect.Height() - sy *pole[i + 1]);
 	}
 }
 
@@ -245,12 +245,15 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 			else if(factor < maxG) factor = maxG;
 			else factor = maxB;
 		}
+		COLORREF colorR = RGB(255,0,0);
+		COLORREF colorG = RGB( 0,255, 0);
+		COLORREF colorB = RGB(0, 0,255);
 
 		sx = (float)rect.Width()/256;
 		sy = (float)rect.Height()/factor;
-		KresliHistogram(sx, sy, rect, pDC, &penR,histogramR);
-		KresliHistogram(sx, sy, rect, pDC,&penG, histogramG);
-		KresliHistogram(sx, sy, rect, pDC,&penB,histogramB);
+		KresliHistogram(sx, sy, rect, pDC, &penR,histogramR,colorR);
+		KresliHistogram(sx, sy, rect, pDC,&penG, histogramG,colorG);
+		KresliHistogram(sx, sy, rect, pDC,&penB,histogramB,colorB);
 	}
 	else
 	{
