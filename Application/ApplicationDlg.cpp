@@ -203,7 +203,7 @@ void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, 
 {
 	for (int i = 0; i < 255; i++)
 	{		
-		pDC->FillSolidRect(sx*i,rect.Height()-pole[i]*sy,1,pole[i]*sy,color);
+		pDC->FillSolidRect((int)(sx*i), rect.Height() - (int)(log10(pole[i])*sy), sx + 1, (int)(log10(pole[i])*sy), color);
 		//pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
 		//pDC->LineTo(sx*(i + 1), rect.Height() - sy *pole[i + 1]);
 	}
@@ -250,7 +250,7 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		COLORREF colorB = RGB(0, 0,255);
 
 		sx = (float)rect.Width()/256;
-		sy = (float)rect.Height()/factor;
+		sy = (float)rect.Height()/ (log10(factor));
 		KresliHistogram(sx, sy, rect, pDC, &penR,histogramR,colorR);
 		KresliHistogram(sx, sy, rect, pDC,&penG, histogramG,colorG);
 		KresliHistogram(sx, sy, rect, pDC,&penB,histogramB,colorB);
