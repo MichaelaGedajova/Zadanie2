@@ -74,7 +74,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	void Histogram(int h, int w);
 	float FunkciaMax(int *pole);
-	void KresliHistogram(float sx, float sy, CRect rect,CDC * pDC);
+	void KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen, int *pole);
 protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHistogram;

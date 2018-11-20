@@ -199,26 +199,13 @@ float CApplicationDlg::FunkciaMax(int *pole)
 	return max;
 }
 
-
-void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC)
+void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen,int *pole)
 {
-	CPen penR(PS_SOLID, 1, RGB(255, 0, 0));
-	CPen penG(PS_SOLID, 1, RGB(0, 255, 0));
-	CPen penB(PS_SOLID, 1, RGB(0, 0, 255));
-
 	for (int i = 0; i < 255; i++)
 	{
-		pDC->SelectObject(&penR);
+		pDC->SelectObject(pen);
 		pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
-		pDC->LineTo(sx*(i + 1), rect.Height() - sy *histogramR[i + 1]);
-
-		pDC->SelectObject(&penG);
-		pDC->MoveTo(sx*i, rect.Height() - sy * histogramG[i]);
-		pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramG[i + 1]);
-
-		pDC->SelectObject(&penB);
-		pDC->MoveTo(sx*i, rect.Height() - sy * histogramB[i]);
-		pDC->LineTo(sx*(i + 1), rect.Height() - sy * histogramB[i + 1]);
+		pDC->LineTo(sx*(i + 1), rect.Height() - sy *pole[i + 1]);
 	}
 }
 
@@ -238,6 +225,9 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		float maxR, maxG, maxB;
 		float factor = 0;
 		float sx, sy;
+		CPen penR(PS_SOLID, 1, RGB(255, 0, 0));
+		CPen penG(PS_SOLID, 1, RGB(0, 255, 0));
+		CPen penB(PS_SOLID, 1, RGB(0, 0, 255));
 		
 		bmp.Attach(image->Detach());
 		bmDC.CreateCompatibleDC(pDC);
@@ -260,7 +250,9 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 
 		sx = (float)rect.Width()/256;
 		sy = (float)rect.Height()/factor;
-		KresliHistogram(sx, sy, rect, pDC);
+		KresliHistogram(sx, sy, rect, pDC, &penR,histogramR);
+		KresliHistogram(sx, sy, rect, pDC,&penG, histogramG);
+		KresliHistogram(sx, sy, rect, pDC,&penB,histogramB);
 	}
 	else
 	{
