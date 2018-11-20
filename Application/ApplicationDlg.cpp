@@ -234,8 +234,6 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		bmp.GetBitmap(&bi);
 		image->Attach((HBITMAP)bmp.Detach());
 
-		Histogram(bi.bmHeight, bi.bmWidth);
-
 		//skalovanie histogramu
 		maxR = FunkciaMax(histogramR);
 		maxG = FunkciaMax(histogramG);
@@ -395,8 +393,8 @@ void CApplicationDlg::OnFileOpen()
 				delete image;
 				image = nullptr;
 			}
-
 			// prekreslenie vsetkych okien
+			Histogram(image->GetHeight(), image->GetWidth());
 			Invalidate();
 		}
 		else {
