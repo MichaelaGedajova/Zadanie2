@@ -1,10 +1,10 @@
 ﻿  ApplicationDlg.cpp
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(150): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(151): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(194): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(197): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(206): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(344): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(347): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(161): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(162): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(205): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(208): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(217): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(355): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(358): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.exe
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.pdb (Partial PDB)

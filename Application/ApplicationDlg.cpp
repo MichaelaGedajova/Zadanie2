@@ -67,6 +67,10 @@ CApplicationDlg::CApplicationDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_APPLICATION_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	for (int i = 0; i < 256; i++)
+	{
+		tmp_hist[i] = i;
+	}
 }
 
 void CApplicationDlg::DoDataExchange(CDataExchange* pDX)
@@ -90,6 +94,13 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
 	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
+	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
+	ON_COMMAND(ID_HISTOGRAM_RED, OnHistogramRed)
+	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_RED, OnUpdateHistogramRed)
+	ON_COMMAND(ID_HISTOGRAM_GREEN, OnHistogramGreen)
+	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_GREEN, OnUpdateHistogramGreen)
+	ON_COMMAND(ID_HISTOGRAM_BLUE, OnHistogramBlue)
+	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_BLUE, OnUpdateHistogramBlue)
 END_MESSAGE_MAP()
 
 
@@ -251,9 +262,9 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 
 		sx = (float)rect.Width()/256;
 		sy = (float)rect.Height()/ (log10(factor));
-		KresliHistogram(sx, sy, rect, pDC, &penR,histogramR,colorR);
-		KresliHistogram(sx, sy, rect, pDC,&penG, histogramG,colorG);
-		KresliHistogram(sx, sy, rect, pDC,&penB,histogramB,colorB);
+		if (checkbox_red == TRUE) KresliHistogram(sx, sy, rect, pDC, &penR,histogramR,colorR);
+		if (checkbox_green == TRUE) KresliHistogram(sx, sy, rect, pDC,&penG, histogramG,colorG);
+		if (checkbox_blue == TRUE) KresliHistogram(sx, sy, rect, pDC,&penB,histogramB,colorB);
 	}
 	else
 	{
@@ -447,6 +458,87 @@ void CApplicationDlg::OnFileClose()
 
 
 void CApplicationDlg::OnUpdateFileClose(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnStnClickedImage()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void CApplicationDlg::OnHistogramRed()
+{
+	CMenu *pMenu = GetMenu();
+
+	if (pMenu->GetMenuState(ID_HISTOGRAM_RED, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_RED, MF_BYCOMMAND | MF_UNCHECKED);
+
+		checkbox_red = false;
+	}
+
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_RED, MF_BYCOMMAND | MF_CHECKED);
+
+		checkbox_red = true;
+	}
+
+	Invalidate();
+}
+
+void CApplicationDlg::OnUpdateHistogramRed(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnHistogramGreen()
+{
+	CMenu *pMenu = GetMenu();
+
+	if (pMenu->GetMenuState(ID_HISTOGRAM_GREEN, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_GREEN, MF_BYCOMMAND | MF_UNCHECKED);
+
+		checkbox_green = false;
+	}
+
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_GREEN, MF_BYCOMMAND | MF_CHECKED);
+
+		checkbox_green = true;
+	}
+
+	Invalidate();
+}
+
+void CApplicationDlg::OnUpdateHistogramGreen(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnHistogramBlue()
+{
+	CMenu *pMenu = GetMenu();
+
+	if (pMenu->GetMenuState(ID_HISTOGRAM_BLUE, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_BLUE, MF_BYCOMMAND | MF_UNCHECKED);
+
+		checkbox_blue = false;
+	}
+
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_BLUE, MF_BYCOMMAND | MF_CHECKED);
+
+		checkbox_blue = true;
+	}
+
+	Invalidate();
+
+}
+
+void CApplicationDlg::OnUpdateHistogramBlue(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
 }

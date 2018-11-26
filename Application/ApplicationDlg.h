@@ -61,6 +61,10 @@ protected:
 	int histogramR[255] = {0};
 	int histogramG[255] = {0};
 	int histogramB[255] = {0};
+	bool checkbox_red = false;
+	bool checkbox_green = false;
+	bool checkbox_blue = false;
+	int tmp_hist[256] = { 0 };
 
 public:
 	afx_msg void OnFileOpen();
@@ -75,10 +79,20 @@ public:
 	void Histogram(int h, int w);
 	float FunkciaMax(int *pole);
 	void KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen, int *pole, COLORREF color);
+	afx_msg void OnHistogramRed();
+	afx_msg void OnHistogramGreen();
+	afx_msg void OnHistogramBlue();
+	afx_msg void OnUpdateHistogramRed(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
+
+
 protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHistogram;
 	CPoint m_ptImage;
 	CPoint m_ptHistogram;
 
+public:
+	afx_msg void OnStnClickedImage();
 };
