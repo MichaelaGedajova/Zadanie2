@@ -11,6 +11,7 @@
 #include <vector>
 #include <gdiplus.h>
 #include <iostream>
+#include <thread>
 using namespace Gdiplus;
 
 #ifdef _DEBUG
@@ -171,29 +172,63 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	return S_OK;
 }
 
-void CApplicationDlg::Histogram(int h, int w)
+void CApplicationDlg::Histogram()
 {
-	if (image != nullptr) {
+	int i, j;
+	int width = image->GetWidth();
+	int height = image->GetHeight();
+	max_hist = 0;
 
-		COLORREF ccolor = 0;
-		int *Red = new int[(h*w)];
-		int *Green = new int[(h*w)];
-		int *Blue = new int[(h*w)];
-		int pom = 0;
+	for (i = 0; i < 256; i++)
+	{
+		m_hR[i] = 0;
+		m_hG[i] = 0;
+		m_hB[i] = 0;
+	}
 
-		for (int i = 0; i < w; i++)
-			for (int j = 0; j < h; j++)
+	int tmpR, tmpG, tmpB;
+	COLORREF pixelColor = 0;
+	BYTE *byte_ptr;
+	int pitch; //kolko realne ma bitmapa na sirku
+
+	byte_ptr = (BYTE *)(image->GetBits());
+	pitch = image->GetPitch();
+
+
+	for (j = 0; j < height; j++)
+	{
+		for (i = 0; i < width; i++)
+		{
+
+			tmpR = *(byte_ptr + pitch*j + 3 * i);
+			tmpG = *(byte_ptr + pitch*j + 3 * i + 1);
+			tmpB = *(byte_ptr + pitch*j + 3 * i + 2);
+
+			m_hR[tmpR]++;
+			m_hG[tmpG]++;
+			m_hB[tmpB]++;
+
+			//maximum histogramu
+			if ((max_hist < m_hR[tmpR]) || (max_hist < m_hG[tmpG]) || (max_hist < m_hB[tmpB]))
 			{
-				ccolor = image->GetPixel(i, j);
-				Red[pom] = (int)GetRValue(ccolor);
-				Green[pom] = (int)GetGValue(ccolor);
-				Blue[pom] = (int)GetBValue(ccolor);
-				pom++;
+				max_hist = m_hR[tmpR];
+
+				if (m_hG[tmpG] > max_hist)
+					max_hist = m_hG[tmpG];
+				if (m_hB[tmpB] > max_hist)
+					max_hist = m_hB[tmpB];
 			}
 
-		for (int i = 0; i < h*w; i++)
-		{
-			histogramR[Red[i]]++; histogramG[Green[i]]++; histogramB[Blue[i]]++;
+			//minimum histogramu
+			if ((min_hist > m_hR[tmpR]) || (min_hist > m_hG[tmpG]) || (min_hist > m_hB[tmpB]))
+			{
+				min_hist = m_hR[tmpR];
+
+				if (m_hG[tmpG] < min_hist)
+					min_hist = m_hG[tmpG];
+				if (m_hB[tmpB] < min_hist)
+					min_hist = m_hB[tmpB];
+			}
 		}
 	}
 }
@@ -210,13 +245,17 @@ float CApplicationDlg::FunkciaMax(int *pole)
 	return max;
 }
 
-void CApplicationDlg::KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen,int *pole,COLORREF color)
+void CApplicationDlg::KresliHistogram( CRect rect, CDC * pDC, int *pole,COLORREF color,float scale)
 {
 	for (int i = 0; i < 255; i++)
 	{		
-		pDC->FillSolidRect((int)(sx*i), rect.Height() - (int)(log10(pole[i])*sy), sx + 1, (int)(log10(pole[i])*sy), color);
-		//pDC->MoveTo(sx*i, rect.Height() - sy * histogramR[i]);
-		//pDC->LineTo(sx*(i + 1), rect.Height() - sy *pole[i + 1]);
+		
+			pDC->FillSolidRect((int)((float)i* ((float)rect.Width() / (float)256)),
+				rect.Height() - (int)(((float)pole[i] * scale)),
+				(int)((float)1 * ((float)rect.Width() / (float)256)) + 1,
+				(int)(((float)pole[i])*scale),
+				color);
+		
 	}
 }
 
@@ -233,46 +272,24 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		CDC bmDC;
 		BITMAP  bi;
 		CRect rect(lpDI->rcItem);
-		float maxR, maxG, maxB;
-		float factor = 0;
-		float sx, sy;
-		CPen penR(PS_SOLID, 1, RGB(255, 0, 0));
-		CPen penG(PS_SOLID, 1, RGB(0, 255, 0));
-		CPen penB(PS_SOLID, 1, RGB(0, 0, 255));
-		
-		bmp.Attach(image->Detach());
-		bmDC.CreateCompatibleDC(pDC);
-		bmp.GetBitmap(&bi);
-		image->Attach((HBITMAP)bmp.Detach());
+		float rozdiel = (((float)max_hist - (float)min_hist));
+		float scale = (float)rect.Height() / rozdiel;
 
-		//skalovanie histogramu
-		maxR = FunkciaMax(histogramR);
-		maxG = FunkciaMax(histogramG);
-		maxB = FunkciaMax(histogramB);
-		
-		if ((factor < maxR) || (factor < maxG) || (factor < maxB))
-		{
-			if (factor < maxR) factor = maxR;
-			else if(factor < maxG) factor = maxG;
-			else factor = maxB;
-		}
 		COLORREF colorR = RGB(255,0,0);
 		COLORREF colorG = RGB( 0,255, 0);
 		COLORREF colorB = RGB(0, 0,255);
 
-		sx = (float)rect.Width()/256;
-		sy = (float)rect.Height()/ (log10(factor));
-		if (checkbox_red == TRUE) KresliHistogram(sx, sy, rect, pDC, &penR,histogramR,colorR);
-		if (checkbox_green == TRUE) KresliHistogram(sx, sy, rect, pDC,&penG, histogramG,colorG);
-		if (checkbox_blue == TRUE) KresliHistogram(sx, sy, rect, pDC,&penB,histogramB,colorB);
+		if (checkbox_red == TRUE) KresliHistogram(rect, pDC,m_hR,colorR,scale);
+		if (checkbox_green == TRUE) KresliHistogram(rect, pDC, m_hG,colorG,scale);
+		if (checkbox_blue == TRUE) KresliHistogram(rect, pDC, m_hB,colorB,scale);
 	}
 	else
 	{
+		COLORREF colorR = RGB(255, 0, 0);
 		CRect rect(lpDI->rcItem);
-		CBrush brush;
-		brush.CreateSolidBrush(RGB(255, 255, 255));
-		pDC->FillRect(&rect, &brush);
-		DeleteObject(brush);
+		float scale = (float)rect.Height() / ((float)255);
+		COLORREF farbaB = RGB(0, 0, 255);
+		KresliHistogram(rect, pDC, tmp_hist, colorR, scale);
 
 	}
 	return S_OK;
@@ -396,44 +413,45 @@ void CApplicationDlg::OnFileOpen()
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	// file dialog (.jpg a .png)
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
-	if (image == nullptr) {
-		// tu zobrazujem dialog
-		if (dlg.DoModal() == IDOK) {
-			path_name = dlg.GetPathName();
+	if (dlg.DoModal() == IDOK) {
+		CString path_name = dlg.GetPathName();
+	
+		// rusenie objektu CImage pred vytvorenim noveho
+		if (image == nullptr)
+		{
 			image = new CImage();
-			//path_name je protected premenna
 			if (image->Load(path_name))
 			{
 				delete image;
 				image = nullptr;
 			}
-			// prekreslenie vsetkych okien
-			Histogram(image->GetHeight(), image->GetWidth());
-			Invalidate();
+			else
+			{
+				Histogram();
+			//	std::thread first (Histogram());
+			//	first.join();
+			}
+			
 		}
-		else {
-			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
+		else
+		{
+			image->Detach();
+			if (image->Load(path_name))
+			{
+				delete image;
+				image = nullptr;
+			}
+			else
+			{
+				Histogram();
+			}
 		}
-		//::MessageBox(NULL, __T("Prvy IF, image je nula"), __T("Error"), MB_OK);
+
+		//prekreslenie, zavolane po OnDrawImage
+		Invalidate();
 	}
 	else {
-		delete image;
-		image = nullptr;
-		/* zobrazenie file dialogu */
-		if (dlg.DoModal() == IDOK) {
-			path_name = dlg.GetPathName();
-			image = new CImage();
-			if (image->Load(path_name))
-			{
-				delete image;
-				image = nullptr;
-			}
-			// prekreslenie vsetkych okien
-			Invalidate();
-		}
-		else {
-			::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
-		}
+		::MessageBox(NULL, __T("Chyba pri zobrazeni file dialogu."), __T("Error"), MB_OK);
 	}
 }
 

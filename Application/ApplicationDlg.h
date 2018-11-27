@@ -58,13 +58,15 @@ protected:
 	CImage *image=nullptr;
 	BITMAP bitmap;
 	float CApplicationDlg::Skalovanie(CRect r, BITMAP bi);
-	int histogramR[255] = {0};
-	int histogramG[255] = {0};
-	int histogramB[255] = {0};
 	bool checkbox_red = false;
 	bool checkbox_green = false;
 	bool checkbox_blue = false;
+	int m_hR[256] = { 0 };
+	int m_hG[256] = { 0 };
+	int m_hB[256] = { 0 };
 	int tmp_hist[256] = { 0 };
+	int max_hist = 0;
+	int min_hist = 0;
 
 public:
 	afx_msg void OnFileOpen();
@@ -76,9 +78,9 @@ public:
 	afx_msg LRESULT OnDrawHistogram(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	void Histogram(int h, int w);
+	void Histogram();
 	float FunkciaMax(int *pole);
-	void KresliHistogram(float sx, float sy, CRect rect,CDC * pDC, CPen *pen, int *pole, COLORREF color);
+	void KresliHistogram(CRect rect,CDC * pDC, int *pole, COLORREF color,float scale);
 	afx_msg void OnHistogramRed();
 	afx_msg void OnHistogramGreen();
 	afx_msg void OnHistogramBlue();
