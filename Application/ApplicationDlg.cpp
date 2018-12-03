@@ -12,6 +12,9 @@
 #include <gdiplus.h>
 #include <iostream>
 #include <thread>
+#include <future>
+#include <chrono>
+#include <iostream>
 using namespace Gdiplus;
 
 #ifdef _DEBUG
@@ -200,9 +203,9 @@ void CApplicationDlg::Histogram()
 		for (i = 0; i < width; i++)
 		{
 
-			tmpR = *(byte_ptr + pitch*j + 3 * i);
+			tmpB= *(byte_ptr + pitch*j + 3 * i);
 			tmpG = *(byte_ptr + pitch*j + 3 * i + 1);
-			tmpB = *(byte_ptr + pitch*j + 3 * i + 2);
+			tmpR = *(byte_ptr + pitch*j + 3 * i + 2);
 
 			m_hR[tmpR]++;
 			m_hG[tmpG]++;
@@ -251,9 +254,9 @@ void CApplicationDlg::KresliHistogram( CRect rect, CDC * pDC, int *pole,COLORREF
 	{		
 		
 			pDC->FillSolidRect((int)((float)i* ((float)rect.Width() / (float)256)),
-				rect.Height() - (int)(((float)pole[i] * scale)),
+				rect.Height() - (int)(((float)(pole[i]-min_hist) * scale)),
 				(int)((float)1 * ((float)rect.Width() / (float)256)) + 1,
-				(int)(((float)pole[i])*scale),
+				(int)(((float)(pole[i]-min_hist))*scale),
 				color);
 		
 	}
