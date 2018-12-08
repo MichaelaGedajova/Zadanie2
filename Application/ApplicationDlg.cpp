@@ -29,14 +29,13 @@ using namespace Gdiplus;
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
-	
 }
 
 void CStaticHistogram::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_HISTOGRAM, (WPARAM)lpDrawItemStruct);
+	}
 
-}
 
 // CAboutDlg dialog used for App About
 
@@ -75,6 +74,8 @@ CApplicationDlg::CApplicationDlg(CWnd* pParent /*=NULL*/)
 	{
 		tmp_hist[i] = i;
 	}
+	
+
 }
 
 void CApplicationDlg::DoDataExchange(CDataExchange* pDX)
@@ -105,6 +106,9 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_GREEN, OnUpdateHistogramGreen)
 	ON_COMMAND(ID_HISTOGRAM_BLUE, OnHistogramBlue)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_BLUE, OnUpdateHistogramBlue)
+	ON_COMMAND(ID_HISTOGRAM_VYROVNANIE, OnHistogramVyrovnanie)
+	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_VYROVNANIE, OnUpdateHistogramVyrovnanie)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -161,18 +165,29 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		//vlastnosti BITMAP do bmp
 		bmp.GetBitmap(&bi);
 		
-		//skalovanie		
-		bi.bmWidth *= ((float)r.Width() / (float)bi.bmWidth) * Skalovanie(r, bi);;
-		bi.bmHeight *= ((float)r.Height() / (float)bi.bmHeight) * Skalovanie(r, bi);;
+		pDC->FillSolidRect(r.left, r.top, r.Width(), r.Height(), RGB(255, 255, 255));
+
+		double dWtoH = (double)bi.bmWidth / (double)bi.bmHeight;
+		UINT nHeight = r.Height();
+		UINT nWidth = (UINT)(dWtoH * (double)nHeight);
+
+		if (nWidth > (UINT)r.Width())
+		{
+			nWidth = r.Width();
+			nHeight = (UINT)(nWidth / dWtoH);
+			_ASSERTE(nHeight <= (UINT)r.Height());
+		}
+		//if (checkbox_vyrovnanie == TRUE)HistogramEqualization(width,height);
+		//aby boli pekne farby
 		pDC->SetStretchBltMode(HALFTONE);
 
-		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
+		pDC->StretchBlt(r.left + (r.Width() - nWidth) / 2, r.top + (r.Height() - nHeight) / 2, nWidth, nHeight, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
+
 		image->Attach((HBITMAP)bmp.Detach());
 
 		return S_OK;
 	}
-	return S_OK;
 }
 
 void CApplicationDlg::Histogram()
@@ -189,23 +204,16 @@ void CApplicationDlg::Histogram()
 		m_hB[i] = 0;
 	}
 
-	int tmpR, tmpG, tmpB;
 	COLORREF pixelColor = 0;
-	BYTE *byte_ptr;
-	int pitch; //kolko realne ma bitmapa na sirku
-
-	byte_ptr = (BYTE *)(image->GetBits());
-	pitch = image->GetPitch();
-
 
 	for (j = 0; j < height; j++)
 	{
 		for (i = 0; i < width; i++)
 		{
 
-			tmpB= *(byte_ptr + pitch*j + 3 * i);
+			tmpR= *(byte_ptr + pitch*j + 3 * i);
 			tmpG = *(byte_ptr + pitch*j + 3 * i + 1);
-			tmpR = *(byte_ptr + pitch*j + 3 * i + 2);
+			tmpB = *(byte_ptr + pitch*j + 3 * i + 2);
 
 			m_hR[tmpR]++;
 			m_hG[tmpG]++;
@@ -234,6 +242,7 @@ void CApplicationDlg::Histogram()
 			}
 		}
 	}
+	m_bhist = true;
 }
 
 
@@ -257,9 +266,39 @@ void CApplicationDlg::KresliHistogram( CRect rect, CDC * pDC, int *pole,COLORREF
 				rect.Height() - (int)(((float)(pole[i]-min_hist) * scale)),
 				(int)((float)1 * ((float)rect.Width() / (float)256)) + 1,
 				(int)(((float)(pole[i]-min_hist))*scale),
-				color);
-		
+				color);		
 	}
+}
+
+void CApplicationDlg::HistogramEqualization(int h, int w)
+{
+	int i, j;
+	//kumulativny histogram
+	float kumR[256] = { 0 };
+	float kumG[256] = { 0 };
+	float kumB[256] = { 0 };
+
+	for (i = 0; i < 256; i++) {
+		if (i == 0) {
+			kumR[i] = m_hR[i] / (double)(w*h);
+			kumG[i] = m_hG[i] / (double)(w*h);
+			kumB[i] = m_hB[i] / (double)(w*h);
+		}
+		else {
+			kumR[i] = kumR[i - 1] + m_hR[i] / (double)(w*h);
+			kumG[i] = kumG[i - 1] + m_hG[i] / (double)(w*h);
+			kumB[i] = kumB[i - 1] + m_hB[i] / (double)(w*h);
+		}
+	}
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+			*(byte_ptr + pitch*j + 3 * i) = floor((255)*kumR[(int)*(byte_ptr + pitch*j + 3 * i )] +0.5);
+			*(byte_ptr + pitch*j + 3 * i + 1) = floor((255)*kumG[(int)*(byte_ptr + pitch*j + 3 * i +1 )]+0.5);
+			*(byte_ptr + pitch*j + 3 *i +2) = floor((255)*kumB[(int)*(byte_ptr + pitch*j + 3 * i +2)]+0.5);
+		}
+	}
+	int tmpB, tmpG, tmpR;
+
 }
 
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
@@ -269,11 +308,8 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
 	//DRAW BITMAP
-	if (image != nullptr) {
+	if ((image != nullptr) && (m_bhist == true)) {
 
-		CBitmap bmp;
-		CDC bmDC;
-		BITMAP  bi;
 		CRect rect(lpDI->rcItem);
 		float rozdiel = (((float)max_hist - (float)min_hist));
 		float scale = (float)rect.Height() / rozdiel;
@@ -286,15 +322,14 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		if (checkbox_green == TRUE) KresliHistogram(rect, pDC, m_hG,colorG,scale);
 		if (checkbox_blue == TRUE) KresliHistogram(rect, pDC, m_hB,colorB,scale);
 	}
-	else
-	{
-		COLORREF colorR = RGB(255, 0, 0);
-		CRect rect(lpDI->rcItem);
-		float scale = (float)rect.Height() / ((float)255);
-		COLORREF farbaB = RGB(0, 0, 255);
-		KresliHistogram(rect, pDC, tmp_hist, colorR, scale);
-
-	}
+	//else
+	//{
+	//	COLORREF colorR = RGB(255, 0, 0);
+	//	CRect rect(lpDI->rcItem);
+	//	float scale = (float)rect.Height() / ((float)255);
+	//	COLORREF farbaB = RGB(0, 0, 255);
+	//	KresliHistogram(rect, pDC, tmp_hist, colorR, scale);
+	//	}
 	return S_OK;
 }
 
@@ -342,9 +377,9 @@ BOOL CApplicationDlg::OnInitDialog()
 	m_ptImage.x = rctClient.Width() - rct.Width();
 	m_ptImage.y = rctClient.Height() - rct.Height();
 
-	m_ctrlHistogram.GetWindowRect(&rct);
-	m_ptHistogram.x = rctClient.Width() - rct.Width();
-	m_ptHistogram.y = rctClient.Height() - rct.Height();
+	//m_ctrlHistogram.GetWindowRect(&rct);
+	//m_ptHistogram.x = rctClient.Width() - rct.Width();
+	//m_ptHistogram.y = rctClient.Height() - rct.Height();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -369,13 +404,14 @@ void CApplicationDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
 {
-	Invalidate();
-	__super::OnSize(nType, cx, cy);
-	if (m_ctrlImage)
-		m_ctrlImage.MoveWindow(CRect((cx*0.2), 0, cx, cy));
+	if (::IsWindow(m_ctrlImage.GetSafeHwnd()))
+		m_ctrlImage.MoveWindow(cx*0.2, 0, cx - (cx*0.2), cy);
 
-	if (m_ctrlHistogram)
-		m_ctrlHistogram.MoveWindow(CRect(0, (cy*0.5), (cx*0.2), cy));
+	__super::OnSize(nType, cx, cy);
+
+	if (::IsWindow(m_ctrlHistogram.GetSafeHwnd()))
+		m_ctrlHistogram.MoveWindow(0, (int)(0.5*cy), cx - (cx*0.8), (int)(0.5*cy));
+	Invalidate();
 }
 
 
@@ -430,9 +466,14 @@ void CApplicationDlg::OnFileOpen()
 			}
 			else
 			{
-				Histogram();
-			//	std::thread first (Histogram());
-			//	first.join();
+				width = image->GetWidth();
+				height = image->GetHeight();
+				byte_ptr = (BYTE *)(image->GetBits());
+				pitch = image->GetPitch();
+				id = SetTimer(1, 100, nullptr);
+				m_bhist = false;
+				std::thread t1(&CApplicationDlg::Histogram, this);
+				t1.detach();
 			}
 			
 		}
@@ -446,7 +487,14 @@ void CApplicationDlg::OnFileOpen()
 			}
 			else
 			{
-				Histogram();
+				width = image->GetWidth();
+				height = image->GetHeight();
+				byte_ptr = (BYTE *)(image->GetBits());
+				pitch = image->GetPitch();
+				m_bhist = false;
+				id = SetTimer(1, 100, nullptr);
+				std::thread t1(&CApplicationDlg::Histogram, this);
+				t1.detach();
 			}
 		}
 
@@ -462,7 +510,6 @@ void CApplicationDlg::OnFileOpen()
 void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
-
 }
 
 
@@ -562,4 +609,41 @@ void CApplicationDlg::OnHistogramBlue()
 void CApplicationDlg::OnUpdateHistogramBlue(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnHistogramVyrovnanie()
+{
+	CMenu *pMenu = GetMenu();
+
+	if (pMenu->GetMenuState(ID_HISTOGRAM_VYROVNANIE, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_VYROVNANIE, MF_BYCOMMAND | MF_UNCHECKED);
+
+		checkbox_vyrovnanie = false;
+	}
+
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_VYROVNANIE, MF_BYCOMMAND | MF_CHECKED);
+
+		checkbox_vyrovnanie = true;
+	}
+	if(checkbox_vyrovnanie==TRUE)HistogramEqualization(width, height);
+	
+
+	Invalidate();
+
+}
+
+void CApplicationDlg::OnUpdateHistogramVyrovnanie(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (
+		m_bhist == true) {
+		KillTimer(id);
+		Invalidate();
+	}
 }

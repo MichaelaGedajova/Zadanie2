@@ -1,10 +1,20 @@
 ﻿  ApplicationDlg.cpp
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(165): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(166): warning C4244: '*=': conversion from 'float' to 'LONG', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(243): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(246): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(276): warning C4101: 'bi': unreferenced local variable
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(375): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(378): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(252): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(255): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(283): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(284): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(285): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(288): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(289): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(290): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(295): warning C4244: '=': conversion from 'double' to 'BYTE', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(296): warning C4244: '=': conversion from 'double' to 'BYTE', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(297): warning C4244: '=': conversion from 'double' to 'BYTE', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(300): warning C4101: 'tmpR': unreferenced local variable
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(300): warning C4101: 'tmpB': unreferenced local variable
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(300): warning C4101: 'tmpG': unreferenced local variable
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(408): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(413): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\user\desktop\skola\tvorbasoftsys\zadanie2\application\applicationdlg.cpp(191): warning C4715: 'CApplicationDlg::OnDrawImage': not all control paths return a value
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.exe
   Application.vcxproj -> C:\Users\user\Desktop\SKOLA\Tvorbasoftsys\Zadanie2\console-app-master\x64\Debug\Application.pdb (Partial PDB)

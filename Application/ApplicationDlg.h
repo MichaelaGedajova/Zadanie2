@@ -29,6 +29,11 @@ public:
 		WM_DRAW_IMAGE = (WM_USER + 1),
 		WM_DRAW_HISTOGRAM
 	};
+	enum
+	{
+		WM_DRAW_IMAGE2 = (WM_USER + 1),
+		WM_DRAW_HISTOGRAM2
+	};
 
 	CApplicationDlg(CWnd* pParent = NULL);	// standard constructor
 
@@ -61,12 +66,21 @@ protected:
 	bool checkbox_red = false;
 	bool checkbox_green = false;
 	bool checkbox_blue = false;
+	bool checkbox_vyrovnanie = false;
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
 	int tmp_hist[256] = { 0 };
 	int max_hist = 0;
 	int min_hist = 0;
+	int tmpR, tmpG, tmpB;
+
+	bool m_bhist = false;
+	BYTE *byte_ptr;
+	int pitch; //kolko realne ma bitmapa na sirku
+	int width = 0;
+	int height = 0;
+	UINT_PTR id = 0;
 
 public:
 	afx_msg void OnFileOpen();
@@ -78,16 +92,21 @@ public:
 	afx_msg LRESULT OnDrawHistogram(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	void Histogram();
-	float FunkciaMax(int *pole);
-	void KresliHistogram(CRect rect,CDC * pDC, int *pole, COLORREF color,float scale);
 	afx_msg void OnHistogramRed();
 	afx_msg void OnHistogramGreen();
 	afx_msg void OnHistogramBlue();
 	afx_msg void OnUpdateHistogramRed(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
+	afx_msg void OnHistogramVyrovnanie();
+	afx_msg void OnUpdateHistogramVyrovnanie(CCmdUI *pCmdUI);
+	afx_msg void KresliHistogram(CRect, CDC *, int *, COLORREF color, float);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void HistogramEqualization(int h,int w);
 
+	void Histogram();
+	float FunkciaMax(int *pole);
+	//void KresliHistogram(CRect rect, CDC * pDC, int *pole, COLORREF color, float scale);
 
 protected:
 	CStaticImage m_ctrlImage;
