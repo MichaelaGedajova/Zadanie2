@@ -108,6 +108,8 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_BLUE, OnUpdateHistogramBlue)
 	ON_COMMAND(ID_HISTOGRAM_VYROVNANIE, OnHistogramVyrovnanie)
 	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_VYROVNANIE, OnUpdateHistogramVyrovnanie)
+	ON_COMMAND(ID_HISTOGRAM_CIERNOBIELY, OnHistogramCiernobiely)
+	ON_UPDATE_COMMAND_UI(ID_HISTOGRAM_CIERNOBIELY, OnUpdateHistogramCiernobiely)
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
@@ -143,28 +145,22 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
-
+	
 	//DRAW BITMAP
 	if (image != nullptr) {
-
 		CBitmap bmp;
 		CDC bmDC;
 		CBitmap *pOldbmp;
 		BITMAP  bi;
 
-		//udaje nasho image obrazku 
 		bmp.Attach(image->Detach());
-		//udaje z pdc su skopirovane do bmDC
 		bmDC.CreateCompatibleDC(pDC);
 
 		CRect r(lpDI->rcItem);
 
-		//bmDC je kopia pDC, pDC je to s cim pracujeme
-		//smernik ukazuje na bmDC
 		pOldbmp = bmDC.SelectObject(&bmp);
-		//vlastnosti BITMAP do bmp
 		bmp.GetBitmap(&bi);
-		
+
 		pDC->FillSolidRect(r.left, r.top, r.Width(), r.Height(), RGB(255, 255, 255));
 
 		double dWtoH = (double)bi.bmWidth / (double)bi.bmHeight;
@@ -177,7 +173,7 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 			nHeight = (UINT)(nWidth / dWtoH);
 			_ASSERTE(nHeight <= (UINT)r.Height());
 		}
-		//if (checkbox_vyrovnanie == TRUE)HistogramEqualization(width,height);
+
 		//aby boli pekne farby
 		pDC->SetStretchBltMode(HALFTONE);
 
@@ -185,7 +181,6 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		bmDC.SelectObject(pOldbmp);
 
 		image->Attach((HBITMAP)bmp.Detach());
-
 		return S_OK;
 	}
 }
@@ -270,35 +265,69 @@ void CApplicationDlg::KresliHistogram( CRect rect, CDC * pDC, int *pole,COLORREF
 	}
 }
 
+void CApplicationDlg::Grayscale(int h, int w)
+{
+	int i, j;
+	
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+
+			tmp = (*(byte_ptr + pitch*j + 3 * i) + *(byte_ptr + pitch*j + 3 * i + 1) + *(byte_ptr + pitch*j + 3 * i + 2)) / 3;
+			*(byte_ptr + pitch*j + 3 * i) = tmp;
+			*(byte_ptr + pitch*j + 3 * i + 1) = tmp;
+			*(byte_ptr + pitch*j + 3 * i + 2) = tmp;
+		}
+	}
+		
+	for (i = 0; i < h; i++)
+	{
+		for (j = 0; j < w; j++)
+		{
+
+			tmpRf = *(byte_ptr + pitch*j + 3 * i);
+			tmpGf= *(byte_ptr + pitch*j + 3 * i + 1);
+			tmpBf= *(byte_ptr + pitch*j + 3 * i + 2);
+
+			noveR[tmpRf]++;
+			noveG[tmpGf]++;
+			noveB[tmpBf]++;
+		}
+	}
+}
+
 void CApplicationDlg::HistogramEqualization(int h, int w)
 {
 	int i, j;
 	//kumulativny histogram
-	float kumR[256] = { 0 };
-	float kumG[256] = { 0 };
-	float kumB[256] = { 0 };
 
 	for (i = 0; i < 256; i++) {
+		m_hR[i] =(m_hR[i] + m_hG[i]+ m_hB[i]) / 3;
+		m_hG[i] = (m_hR[i] + m_hG[i]+ m_hB[i]) / 3;
+		m_hB[i] = (m_hR[i] + m_hG[i]  + m_hB[i])/ 3;
+		
 		if (i == 0) {
+	
 			kumR[i] = m_hR[i] / (double)(w*h);
 			kumG[i] = m_hG[i] / (double)(w*h);
-			kumB[i] = m_hB[i] / (double)(w*h);
+			kumB[i] = m_hB[i] / (double)(w*h);			
 		}
 		else {
+	
 			kumR[i] = kumR[i - 1] + m_hR[i] / (double)(w*h);
 			kumG[i] = kumG[i - 1] + m_hG[i] / (double)(w*h);
 			kumB[i] = kumB[i - 1] + m_hB[i] / (double)(w*h);
 		}
 	}
+	
 	for (i = 0; i < h; i++) {
 		for (j = 0; j < w; j++) {
-			*(byte_ptr + pitch*j + 3 * i) = floor((255)*kumR[(int)*(byte_ptr + pitch*j + 3 * i )] +0.5);
-			*(byte_ptr + pitch*j + 3 * i + 1) = floor((255)*kumG[(int)*(byte_ptr + pitch*j + 3 * i +1 )]+0.5);
-			*(byte_ptr + pitch*j + 3 *i +2) = floor((255)*kumB[(int)*(byte_ptr + pitch*j + 3 * i +2)]+0.5);
+			
+			*(byte_ptr + pitch*j + 3 * i) = floor((255)*kumR[(int)*(byte_ptr + pitch*j + 3 * i )] + 0.8);
+			*(byte_ptr + pitch*j + 3 * i + 1) = floor((255)*kumG[(int)*(byte_ptr + pitch*j + 3 * i +1 )] + 0.8);
+			*(byte_ptr + pitch*j + 3 * i + 2) = floor((255)*kumB[(int)*(byte_ptr + pitch*j + 3 * i + 2)] + 0.8);
 		}
 	}
-	int tmpB, tmpG, tmpR;
-
+	Grayscale(h,w);
 }
 
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
@@ -449,6 +478,7 @@ HCURSOR CApplicationDlg::OnQueryDragIcon()
 
 void CApplicationDlg::OnFileOpen()
 {
+	
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	// file dialog (.jpg a .png)
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
@@ -463,6 +493,7 @@ void CApplicationDlg::OnFileOpen()
 			{
 				delete image;
 				image = nullptr;
+
 			}
 			else
 			{
@@ -475,7 +506,7 @@ void CApplicationDlg::OnFileOpen()
 				std::thread t1(&CApplicationDlg::Histogram, this);
 				t1.detach();
 			}
-			
+						
 		}
 		else
 		{
@@ -496,6 +527,7 @@ void CApplicationDlg::OnFileOpen()
 				std::thread t1(&CApplicationDlg::Histogram, this);
 				t1.detach();
 			}
+			
 		}
 
 		//prekreslenie, zavolane po OnDrawImage
@@ -515,11 +547,30 @@ void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 
 void CApplicationDlg::OnFileClose()
 {
+	CMenu *pMenu = GetMenu();
 	::MessageBox(NULL, __T("Zatvorenie suboru"), __T("Message"), MB_OK);
 	if (image != nullptr)
 	{
 		delete image;
 		image = nullptr;
+
+		m_hR[256] = { 0 };
+		m_hG[256] = { 0 };
+		m_hB[256] = { 0 };
+		noveR[256] = { 0 };
+		noveG[256] = { 0 };
+		noveB[256] = { 0 };
+		kumR[256] = { 0 };
+		kumG[256] = { 0 };
+		kumB[256] = { 0 };
+		tmpRf = 0;
+		tmpGf = 0;
+		tmpBf = 0;
+
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_VYROVNANIE, MF_BYCOMMAND | MF_UNCHECKED);
+	
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_CIERNOBIELY, MF_BYCOMMAND | MF_UNCHECKED);
+	
 	}
 	Invalidate();
 }
@@ -635,6 +686,34 @@ void CApplicationDlg::OnHistogramVyrovnanie()
 }
 
 void CApplicationDlg::OnUpdateHistogramVyrovnanie(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnHistogramCiernobiely()
+{
+	CMenu *pMenu = GetMenu();
+
+	if (pMenu->GetMenuState(ID_HISTOGRAM_CIERNOBIELY, MF_BYCOMMAND | MF_CHECKED))
+	{
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_CIERNOBIELY, MF_BYCOMMAND | MF_UNCHECKED);
+
+		checkbox_ciernobiely = false;
+	}
+
+	else {
+		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_CIERNOBIELY, MF_BYCOMMAND | MF_CHECKED);
+
+		checkbox_ciernobiely = true;
+	}
+	if (checkbox_ciernobiely == true)Grayscale(width,height);
+
+
+	Invalidate();
+
+}
+
+void CApplicationDlg::OnUpdateHistogramCiernobiely(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
 }

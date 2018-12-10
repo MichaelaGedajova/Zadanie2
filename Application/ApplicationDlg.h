@@ -67,13 +67,21 @@ protected:
 	bool checkbox_green = false;
 	bool checkbox_blue = false;
 	bool checkbox_vyrovnanie = false;
+	bool checkbox_ciernobiely = false;
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
+	int noveR[256] = { 0 };
+	int noveG[256] = { 0 };
+	int noveB[256] = { 0 };
+	float kumR[256] = { 0 };
+	float kumG[256] = { 0 };
+	float kumB[256] = { 0 };
 	int tmp_hist[256] = { 0 };
 	int max_hist = 0;
 	int min_hist = 0;
 	int tmpR, tmpG, tmpB;
+	int tmpRf, tmpGf, tmpBf;
 
 	bool m_bhist = false;
 	BYTE *byte_ptr;
@@ -81,6 +89,8 @@ protected:
 	int width = 0;
 	int height = 0;
 	UINT_PTR id = 0;
+	float tmp;
+	float tmpf[256] = { 0 };
 
 public:
 	afx_msg void OnFileOpen();
@@ -99,13 +109,17 @@ public:
 	afx_msg void OnUpdateHistogramGreen(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateHistogramBlue(CCmdUI *pCmdUI);
 	afx_msg void OnHistogramVyrovnanie();
+	afx_msg void OnHistogramCiernobiely();
 	afx_msg void OnUpdateHistogramVyrovnanie(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHistogramCiernobiely(CCmdUI *pCmdUI);
 	afx_msg void KresliHistogram(CRect, CDC *, int *, COLORREF color, float);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void HistogramEqualization(int h,int w);
+	afx_msg void Grayscale(int h, int w);
 
 	void Histogram();
 	float FunkciaMax(int *pole);
+	
 	//void KresliHistogram(CRect rect, CDC * pDC, int *pole, COLORREF color, float scale);
 
 protected:
