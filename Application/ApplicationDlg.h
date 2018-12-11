@@ -85,7 +85,11 @@ protected:
 
 	bool m_bhist = false;
 	BYTE *byte_ptr;
+	BYTE *byte_ptr1;
+	BYTE *byte_ptr2;
 	int pitch; //kolko realne ma bitmapa na sirku
+	int pitch1;
+	int pitch2;
 	int width = 0;
 	int height = 0;
 	UINT_PTR id = 0;
@@ -114,7 +118,7 @@ public:
 	afx_msg void OnUpdateHistogramCiernobiely(CCmdUI *pCmdUI);
 	afx_msg void KresliHistogram(CRect, CDC *, int *, COLORREF color, float);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg void HistogramEqualization(int h,int w);
+	afx_msg void HistogramEqualization();
 	afx_msg void Grayscale(int h, int w);
 
 	void Histogram();

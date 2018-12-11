@@ -34,7 +34,7 @@ void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 void CStaticHistogram::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_HISTOGRAM, (WPARAM)lpDrawItemStruct);
-	}
+}
 
 
 // CAboutDlg dialog used for App About
@@ -74,7 +74,7 @@ CApplicationDlg::CApplicationDlg(CWnd* pParent /*=NULL*/)
 	{
 		tmp_hist[i] = i;
 	}
-	
+
 
 }
 
@@ -145,7 +145,7 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
-	
+
 	//DRAW BITMAP
 	if (image != nullptr) {
 		CBitmap bmp;
@@ -206,7 +206,7 @@ void CApplicationDlg::Histogram()
 		for (i = 0; i < width; i++)
 		{
 
-			tmpR= *(byte_ptr + pitch*j + 3 * i);
+			tmpR = *(byte_ptr + pitch*j + 3 * i);
 			tmpG = *(byte_ptr + pitch*j + 3 * i + 1);
 			tmpB = *(byte_ptr + pitch*j + 3 * i + 2);
 
@@ -252,23 +252,23 @@ float CApplicationDlg::FunkciaMax(int *pole)
 	return max;
 }
 
-void CApplicationDlg::KresliHistogram( CRect rect, CDC * pDC, int *pole,COLORREF color,float scale)
+void CApplicationDlg::KresliHistogram(CRect rect, CDC * pDC, int *pole, COLORREF color, float scale)
 {
 	for (int i = 0; i < 255; i++)
-	{		
-		
-			pDC->FillSolidRect((int)((float)i* ((float)rect.Width() / (float)256)),
-				rect.Height() - (int)(((float)(pole[i]-min_hist) * scale)),
-				(int)((float)1 * ((float)rect.Width() / (float)256)) + 1,
-				(int)(((float)(pole[i]-min_hist))*scale),
-				color);		
+	{
+
+		pDC->FillSolidRect((int)((float)i* ((float)rect.Width() / (float)256)),
+			rect.Height() - (int)(((float)(pole[i] - min_hist) * scale)),
+			(int)((float)1 * ((float)rect.Width() / (float)256)) + 1,
+			(int)(((float)(pole[i] - min_hist))*scale),
+			color);
 	}
 }
 
 void CApplicationDlg::Grayscale(int h, int w)
 {
 	int i, j;
-	
+
 	for (i = 0; i < h; i++) {
 		for (j = 0; j < w; j++) {
 
@@ -278,15 +278,15 @@ void CApplicationDlg::Grayscale(int h, int w)
 			*(byte_ptr + pitch*j + 3 * i + 2) = tmp;
 		}
 	}
-		
+
 	for (i = 0; i < h; i++)
 	{
 		for (j = 0; j < w; j++)
 		{
 
 			tmpRf = *(byte_ptr + pitch*j + 3 * i);
-			tmpGf= *(byte_ptr + pitch*j + 3 * i + 1);
-			tmpBf= *(byte_ptr + pitch*j + 3 * i + 2);
+			tmpGf = *(byte_ptr + pitch*j + 3 * i + 1);
+			tmpBf = *(byte_ptr + pitch*j + 3 * i + 2);
 
 			noveR[tmpRf]++;
 			noveG[tmpGf]++;
@@ -295,39 +295,39 @@ void CApplicationDlg::Grayscale(int h, int w)
 	}
 }
 
-void CApplicationDlg::HistogramEqualization(int h, int w)
+void CApplicationDlg::HistogramEqualization()
 {
 	int i, j;
 	//kumulativny histogram
 
 	for (i = 0; i < 256; i++) {
-		m_hR[i] =(m_hR[i] + m_hG[i]+ m_hB[i]) / 3;
-		m_hG[i] = (m_hR[i] + m_hG[i]+ m_hB[i]) / 3;
-		m_hB[i] = (m_hR[i] + m_hG[i]  + m_hB[i])/ 3;
-		
+		m_hR[i] = (m_hR[i] + m_hG[i] + m_hB[i]) / 3;
+		m_hG[i] = (m_hR[i] + m_hG[i] + m_hB[i]) / 3;
+		m_hB[i] = (m_hR[i] + m_hG[i] + m_hB[i]) / 3;
+
 		if (i == 0) {
-	
-			kumR[i] = m_hR[i] / (double)(w*h);
-			kumG[i] = m_hG[i] / (double)(w*h);
-			kumB[i] = m_hB[i] / (double)(w*h);			
+
+			kumR[i] = m_hR[i] / (double)(height*width);
+			kumG[i] = m_hG[i] / (double)(height*width);
+			kumB[i] = m_hB[i] / (double)(height*width);
 		}
 		else {
-	
-			kumR[i] = kumR[i - 1] + m_hR[i] / (double)(w*h);
-			kumG[i] = kumG[i - 1] + m_hG[i] / (double)(w*h);
-			kumB[i] = kumB[i - 1] + m_hB[i] / (double)(w*h);
+
+			kumR[i] = kumR[i - 1] + m_hR[i] / (double)(height*width);
+			kumG[i] = kumG[i - 1] + m_hG[i] / (double)(height*width);
+			kumB[i] = kumB[i - 1] + m_hB[i] / (double)(height*width);
 		}
 	}
-	
-	for (i = 0; i < h; i++) {
-		for (j = 0; j < w; j++) {
-			
-			*(byte_ptr + pitch*j + 3 * i) = floor((255)*kumR[(int)*(byte_ptr + pitch*j + 3 * i )] + 0.8);
-			*(byte_ptr + pitch*j + 3 * i + 1) = floor((255)*kumG[(int)*(byte_ptr + pitch*j + 3 * i +1 )] + 0.8);
+
+	for (i = 0; i < width; i++) {
+		for (j = 0; j < height; j++) {
+
+			*(byte_ptr + pitch*j + 3 * i) = floor((255)*kumR[(int)*(byte_ptr + pitch*j + 3 * i)] + 0.8);
+			*(byte_ptr + pitch*j + 3 * i + 1) = floor((255)*kumG[(int)*(byte_ptr + pitch*j + 3 * i + 1)] + 0.8);
 			*(byte_ptr + pitch*j + 3 * i + 2) = floor((255)*kumB[(int)*(byte_ptr + pitch*j + 3 * i + 2)] + 0.8);
 		}
 	}
-	Grayscale(h,w);
+	Grayscale(width, height);
 }
 
 LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
@@ -343,13 +343,13 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		float rozdiel = (((float)max_hist - (float)min_hist));
 		float scale = (float)rect.Height() / rozdiel;
 
-		COLORREF colorR = RGB(255,0,0);
-		COLORREF colorG = RGB( 0,255, 0);
-		COLORREF colorB = RGB(0, 0,255);
+		COLORREF colorR = RGB(255, 0, 0);
+		COLORREF colorG = RGB(0, 255, 0);
+		COLORREF colorB = RGB(0, 0, 255);
 
-		if (checkbox_red == TRUE) KresliHistogram(rect, pDC,m_hR,colorR,scale);
-		if (checkbox_green == TRUE) KresliHistogram(rect, pDC, m_hG,colorG,scale);
-		if (checkbox_blue == TRUE) KresliHistogram(rect, pDC, m_hB,colorB,scale);
+		if (checkbox_red == TRUE) KresliHistogram(rect, pDC, m_hR, colorR, scale);
+		if (checkbox_green == TRUE) KresliHistogram(rect, pDC, m_hG, colorG, scale);
+		if (checkbox_blue == TRUE) KresliHistogram(rect, pDC, m_hB, colorB, scale);
 	}
 	//else
 	//{
@@ -478,13 +478,13 @@ HCURSOR CApplicationDlg::OnQueryDragIcon()
 
 void CApplicationDlg::OnFileOpen()
 {
-	
+
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	// file dialog (.jpg a .png)
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
 	if (dlg.DoModal() == IDOK) {
 		CString path_name = dlg.GetPathName();
-	
+
 		// rusenie objektu CImage pred vytvorenim noveho
 		if (image == nullptr)
 		{
@@ -506,7 +506,7 @@ void CApplicationDlg::OnFileOpen()
 				std::thread t1(&CApplicationDlg::Histogram, this);
 				t1.detach();
 			}
-						
+
 		}
 		else
 		{
@@ -527,7 +527,7 @@ void CApplicationDlg::OnFileOpen()
 				std::thread t1(&CApplicationDlg::Histogram, this);
 				t1.detach();
 			}
-			
+
 		}
 
 		//prekreslenie, zavolane po OnDrawImage
@@ -568,9 +568,9 @@ void CApplicationDlg::OnFileClose()
 		tmpBf = 0;
 
 		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_VYROVNANIE, MF_BYCOMMAND | MF_UNCHECKED);
-	
+
 		pMenu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_CIERNOBIELY, MF_BYCOMMAND | MF_UNCHECKED);
-	
+
 	}
 	Invalidate();
 }
@@ -678,8 +678,14 @@ void CApplicationDlg::OnHistogramVyrovnanie()
 
 		checkbox_vyrovnanie = true;
 	}
-	if(checkbox_vyrovnanie==TRUE)HistogramEqualization(width, height);
-	
+	if (checkbox_vyrovnanie == TRUE) {
+		id = SetTimer(1, 100, nullptr);
+		std::thread t2(&CApplicationDlg::HistogramEqualization, this);
+		t2.detach();
+		std::thread t3(&CApplicationDlg::Histogram, this);
+		t3.detach();
+		
+	}
 
 	Invalidate();
 
@@ -706,7 +712,7 @@ void CApplicationDlg::OnHistogramCiernobiely()
 
 		checkbox_ciernobiely = true;
 	}
-	if (checkbox_ciernobiely == true)Grayscale(width,height);
+	if (checkbox_ciernobiely == true)Grayscale(width, height);
 
 
 	Invalidate();
